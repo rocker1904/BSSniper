@@ -1,0 +1,29 @@
+{
+  "name": "bssniper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.js",
+  "private": true,
+  "scripts": {
+    "test": "ts-node src/test.ts",
+    "start": "ts-node src/main.ts",
+    "build": "tsc ; cp -r src/resources build/src/resources",
+    "build_win": "tsc && xcopy src\\resources build\\src\\resources /e /i /h /y"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rocker1904/BSSniper.git"
+  },
+  "author": "Rocker1904",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rocker1904/BSSniper/issues"
+  },
+  "homepage": "https://github.com/rocker1904/BSSniper#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "base64-img": "^1.0.4",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.5"
+  }
+}
