@@ -1,12 +1,11 @@
 {
   "name": "bssniper",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "src/main.js",
   "private": true,
   "scripts": {
-    "test": "ts-node src/test.ts",
-    "start": "ts-node src/main.ts",
+    "test": "cd src && ts-node test.ts",
     "build": "tsc ; cp -r src/resources build/src/resources",
     "build_win": "tsc && xcopy src\\resources build\\src\\resources /e /i /h /y"
   },
@@ -23,6 +22,8 @@
   "dependencies": {
     "axios": "^0.19.2",
     "base64-img": "^1.0.4",
+    "csv-parser": "^2.3.3",
+    "jquery-csv": "^1.0.11",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.5"
   }

@@ -1,5 +1,5 @@
-import BasicPlayerInfo from "./BasicPlayerInfo";
+import PlayerInfo from "./PlayerInfo";
 
 export default interface BasicPlayer {
-    playerInfo: BasicPlayerInfo;
+    playerInfo: PlayerInfo;
 }

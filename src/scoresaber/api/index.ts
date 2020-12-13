@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import Score from "./Score";
 import FullPlayer from "./FullPlayer";
 import BasicPlayer from "./BasicPlayer";
-import BasicPlayerInfo from "./BasicPlayerInfo";
+import PlayerInfo from "./PlayerInfo";
 import PlayerScores from "./PlayerScores";
 import RankingQueue from "./RankingQueue";
 import RankRequest from "./RankRequest";
@@ -16,8 +16,10 @@ export default class ScoreSaberApi {
         let scores = [] as Score[];
         for (let i = 1; i <= totalPages; i++) {
             process.stdout.write(`\r\x1b[2KFetching page ${i}/${totalPages}...`);
-            const scoresPage = (await this.fetchApiPage(`player/${playerId}/scores/top/${i}`)).data as PlayerScores;
+            const resp = await this.fetchApiPage(`player/${playerId}/scores/top/${i}`);
+            const scoresPage = resp.data as PlayerScores;
             scores = scores.concat(scoresPage.scores);
+            await this.waitForRateLimit(resp);
         }
         process.stdout.write(`\r\x1b[2KFetched ${totalPages}/${totalPages}.\n`);
         return scores;
@@ -29,7 +31,7 @@ export default class ScoreSaberApi {
         return topOfRankingQueue.requests.concat(restOfRankingQueue.requests);
     }
 
-    public static async fetchBasicPlayerInfo(playerId: string): Promise<BasicPlayerInfo> {
+    public static async fetchPlayerInfo(playerId: string): Promise<PlayerInfo> {
         const basicPlayer = (await this.fetchApiPage(`player/${playerId}/basic`)).data as BasicPlayer;
         return basicPlayer.playerInfo;
     }
@@ -41,5 +43,12 @@ export default class ScoreSaberApi {
 
     private static async fetchApiPage(relativePath: string): Promise<AxiosResponse<object>> {
         return await axios.get(this.SS_BASE_URL + relativePath);
+    }
+
+    private static async waitForRateLimit(resp: AxiosResponse<object>) {
+        if (resp.headers['x-ratelimit-remaining'] === "0") {
+            const expiresInMillis = resp.headers['x-ratelimit-reset'] * 1000 - new Date().getTime() + 1000;
+            await new Promise(resolve => setTimeout(resolve, expiresInMillis));
+        }
     }
 }

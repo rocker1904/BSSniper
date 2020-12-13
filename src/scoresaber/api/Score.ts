@@ -1,19 +1,19 @@
 export default interface Score {
+    rank: number;
     scoreId: number;
-    leaderboardId: number;
     score: number;
-    uScore: number;
+    unmodififiedScore: number;
     mods: string;
-    playerId: number;
-    timeset: string;
     pp: number;
     weight: number;
-    id: string;
-    name: string;
+    timeSet: string;
+    leaderboardId: number;
+    songHash: string;
+    songName: string;
     songSubName: string;
     songAuthorName: string;
     levelAuthorName: string;
-    diff: string;
-    maxScoreEx: number;
-    rank: number;
+    difficulty: number;
+    difficultyRaw: string;
+    maxScore: number;
 }

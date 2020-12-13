@@ -1,17 +1,17 @@
 import Badge from "./Badge";
 
-export default interface FullPlayerInfo {
+export default interface PlayerInfo {
     playerId: number;
+    playerName: string;
+    avatar: string;
+    rank: number;
+    countryRank: number;
     pp: number;
-    banned: number;
-    inactive: number;
-    name: string;
     country: string;
     role: string;
     badges: Badge[];
     history: string;
     permissions: number;
-    avatar: string;
-    rank: number;
-    countryRank: number;
+    inactive: number;
+    banned: number;
 }
