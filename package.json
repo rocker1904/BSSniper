@@ -21,7 +21,6 @@
   "homepage": "https://github.com/rocker1904/BSSniper#readme",
   "dependencies": {
     "axios": "^0.19.2",
-    "base64-img": "^1.0.4",
     "csv-parser": "^2.3.3",
     "jquery-csv": "^1.0.11",
     "ts-node": "^8.10.2",
