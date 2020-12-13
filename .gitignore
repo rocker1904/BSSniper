@@ -9,3 +9,7 @@ temp/
 /combined.log
 /error.log
 /update.sh
+src/*.json
+src/*.zip
+src/*.txt
+src/*.csv
