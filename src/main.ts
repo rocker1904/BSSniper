@@ -43,8 +43,10 @@ export async function writePlaylist(playlist: Playlist, fileName = playlist.play
 }
 
 // Returns a playlist of a user's songs filtered by a predicate.
-export async function playlistByPredicate(playerId: string, predicate: ScorePredicate, playlistName: InfoToName): Promise<Playlist> {
-    const scores = await ScoreSaberApi.fetchAllScores(playerId);
+export async function playlistByPredicate(playerId: string, predicate: ScorePredicate, playlistName: InfoToName, scores?: Score[]): Promise<Playlist> {
+    if (!scores) {
+        scores = await ScoreSaberApi.fetchAllScores(playerId);
+    }
     let filteredSongs: Song[] = scores.filter(predicate).map(score => {
         if (score.difficultyRaw.split('_')[2] === "SoloStandard"){
             return {songName: score.songName,
