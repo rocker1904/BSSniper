@@ -45,7 +45,23 @@ export async function writePlaylist(playlist: Playlist, fileName = playlist.play
 // Returns a playlist of a user's songs filtered by a predicate.
 export async function playlistByPredicate(playerId: string, predicate: ScorePredicate, playlistName: InfoToName): Promise<Playlist> {
     const scores = await ScoreSaberApi.fetchAllScores(playerId);
-    let filteredSongs: Song[] = scores.filter(predicate).map(score => {return {songName: score.songName, hash: score.songHash}});
+    let filteredSongs: Song[] = scores.filter(predicate).map(score => {
+        if (score.difficultyRaw.split('_')[2] === "SoloStandard"){
+            return {songName: score.songName,
+                levelAuthorName: score.levelAuthorName,
+                hash: score.songHash,
+                levelid: "custom_level_" + score.songHash,
+                difficulties: [{characteristic: "Standard", name: score.difficultyRaw.split('_')[1]}]
+            }
+        } else {
+            return {songName: score.songName,
+                levelAuthorName: score.levelAuthorName,
+                hash: score.songHash,
+                levelid: "custom_level_" + score.songHash
+            }
+        }
+        
+    });
     const playerInfo = await ScoreSaberApi.fetchPlayerInfo(playerId);
     return playlist(playlistName(playerInfo), './resources/sniped.png', filteredSongs);
 }
@@ -60,7 +76,13 @@ export async function playlistOfNumber1s(playerId: string): Promise<Playlist> {
 // Returns a playlist of all the songs currently in the ranking queue.
 export async function rankingQueuePlaylist(): Promise<Playlist> {
     const rankRequests = await ScoreSaberApi.fetchRankingQueue();
-    const songs: Song[] = rankRequests.map(rankRequest => {return {songName: rankRequest.name, hash: rankRequest.id}});
+    const songs: Song[] = rankRequests.map(rankRequest => {
+        return {songName: rankRequest.name,
+                levelAuthorName: rankRequest.levelAuthorName,
+                hash: rankRequest.id,
+                levelid: "custom_level_" + rankRequest.id
+            }
+    });
     return playlist('SS Ranking Queue', './resources/SSRankQueue.png', songs);
 }
 
@@ -98,7 +120,7 @@ export async function percentageOfNMumber1s(playerId: string): Promise<number> {
 // Returns a playlist of all songs where player1 has a lower score than player2.
 export async function snipePlaylist(p1Id: string, p2Id: string): Promise<Playlist> {
     const p2Scores = await ScoreSaberApi.fetchAllScores(p2Id);
-    const predicate: ScorePredicate = p1Score => p2Scores.some(p2Score => p1Score.leaderboardId === p2Score.leaderboardId && p1Score.score < p2Score.score)
+    const predicate: ScorePredicate = p1Score => p2Scores.some(p2Score => p1Score.leaderboardId === p2Score.leaderboardId && p1Score.score < p2Score.score);
     const p2Info = await ScoreSaberApi.fetchPlayerInfo(p2Id);
     const playlistName: InfoToName = () => `Snipe ${p2Info.playerName}`;
     return playlistByPredicate(p1Id, predicate, playlistName);
