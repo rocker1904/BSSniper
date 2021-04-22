@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "axios";
+import axiosRetry from "axios-retry";
 import Score from "./Score";
 import FullPlayer from "./FullPlayer";
 import BasicPlayer from "./BasicPlayer";
@@ -6,6 +7,10 @@ import PlayerInfo from "./PlayerInfo";
 import PlayerScores from "./PlayerScores";
 import RankingQueue from "./RankingQueue";
 import RankRequest from "./RankRequest";
+
+axiosRetry(axios, {
+    retries: 3,
+});
 
 export default class ScoreSaberApi {
     private static readonly SS_BASE_URL = 'https://new.scoresaber.com/api/';
