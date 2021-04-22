@@ -112,6 +112,44 @@ export async function playlistOfScoresBelowGivenAccuracy(playerId: string, accur
     return playlistByPredicate(playerId, predicate, playlistName);
 }
 
+export async function playlistByPercievedWorstScore(playerId: string, PPUpper: number, PPLower: number, leaderboardPlace: number, onlyRanked:boolean): Promise<Playlist> {
+    const predicate: ScorePredicate = score => {
+        const songAcc = score.score / score.maxScore * 100;
+		return score.rank > leaderboardPlace && score.pp <= PPUpper && score.pp >= PPLower && songAcc < 98.6;
+    };
+    
+    const playlistName: InfoToName = playerInfo => `${playerInfo.playerName}'s Improvement Checklist.`;
+    let rawScores = await ScoreSaberApi.fetchAllScores(playerId);
+    let sorted = rawScores.sort(compare);
+    sorted = sorted.filter(predicate);
+    for (let j = 0; j < sorted.length; j++){
+        console.log(`${sorted[j].songName} | Weighting: ${weighting(sorted[j])} | Rank ${sorted[j].rank} | Month  ${monthDiff(new Date(sorted[j].timeSet), new Date())} | PP ${sorted[j].pp}`);
+        console.log(`Post Multiplier | Rank ${sorted[j].rank*3} | Month ${monthDiff(new Date(sorted[j].timeSet), new Date()) * 3} | PP ${sorted[j].pp / 20}`);
+    }
+    return playlistByPredicate(playerId, predicate, playlistName, sorted);
+}
+
+function compare(a: Score, b: Score): number {
+    const weightA = weighting(a);
+    const weightB = weighting(b);
+    return weightA - weightB;
+
+}
+
+function weighting(score: Score){
+    const ageInMonths = monthDiff(new Date(score.timeSet), new Date());
+    let weight = score.rank * 3 + ageInMonths * 3 - score.pp / 20;
+    return weight;
+ }
+
+ function monthDiff(d1: Date, d2: Date) {
+    var months;
+    months = (d2.getFullYear() - d1.getFullYear()) * 12;
+    months -= d1.getMonth();
+    months += d2.getMonth();
+    return months <= 0 ? 0 : months;
+}
+
 // Returns the percentage of songs for which the given player is #1.
 export async function percentageOfNMumber1s(playerId: string): Promise<number> {
     const scores = await ScoreSaberApi.fetchAllScores(playerId);
