@@ -1,10 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import axiosRetry from "axios-retry";
-import Score from "./Score";
-import FullPlayer from "./FullPlayer";
-import BasicPlayer from "./BasicPlayer";
-import PlayerInfo from "./PlayerInfo";
-import PlayerScores from "./PlayerScores";
+import {  Player, PlayerScore, PlayerScoreCollection,  } from './PlayerData';
+import { RankRequestInformation, RankRequestListing } from "./Ranking";
 import RankingQueue from "./RankingQueue";
 import RankRequest from "./RankRequest";
 
@@ -13,21 +10,24 @@ axiosRetry(axios, {
 });
 
 export default class ScoreSaberApi {
-    private static readonly SS_BASE_URL = 'https://new.scoresaber.com/api/';
+    private static readonly SS_BASE_URL = 'https://scoresaber.com/api/';
 
-    public static async fetchAllScores(playerId: string): Promise<Score[]> {
-        const fullPlayer = await this.fetchFullPlayer(playerId);
-        const totalPages = Math.ceil(fullPlayer.scoreStats.totalPlayCount / 8);
-        let scores = [] as Score[];
+    public static async fetchAllScores(playerId: string): Promise<PlayerScore[]> {
+        const player = await this.fetchPlayer(playerId);
+        const totalPages = Math.ceil(player.scoreStats.totalPlayCount / 8);
+        let playerScores = [] as PlayerScore[];
         for (let i = 1; i <= totalPages; i++) {
             process.stdout.write(`\r\x1b[2KFetching page ${i}/${totalPages}...`);
-            const resp = await this.fetchApiPage(`player/${playerId}/scores/top/${i}`);
-            const scoresPage = resp.data as PlayerScores;
-            scores = scores.concat(scoresPage.scores);
+            const resp = await this.fetchApiPage(`player/${playerId}/scores?sort=top&page=${i}`);
+            const scoresPage = resp.data as PlayerScoreCollection;
+            for(let j = 0; j < scoresPage.playerScores.length; j++) {
+                playerScores.push(scoresPage.playerScores[j]);
+            }
             await this.waitForRateLimit(resp);
         }
         process.stdout.write(`\r\x1b[2KFetched ${totalPages}/${totalPages}.\n`);
-        return scores;
+        process.stdout.write(`\r\x1b[2KThe length of scores is: ${playerScores.length}.\n`)
+        return playerScores;
     }
 
     public static async fetchRankingQueue(): Promise<RankRequest[]> {
@@ -36,14 +36,9 @@ export default class ScoreSaberApi {
         return topOfRankingQueue.requests.concat(restOfRankingQueue.requests);
     }
 
-    public static async fetchPlayerInfo(playerId: string): Promise<PlayerInfo> {
-        const basicPlayer = (await this.fetchApiPage(`player/${playerId}/basic`)).data as BasicPlayer;
-        return basicPlayer.playerInfo;
-    }
-
-    public static async fetchFullPlayer(playerId: string): Promise<FullPlayer> {
-        const fullPlayer = (await this.fetchApiPage(`player/${playerId}/full`)).data as FullPlayer;
-        return fullPlayer;
+    public static async fetchPlayer(playerId: string): Promise<Player> {
+        const player = (await this.fetchApiPage(`player/${playerId}/full`)).data as Player;
+        return player;
     }
 
     private static async fetchApiPage(relativePath: string): Promise<AxiosResponse<object>> {
