@@ -90,6 +90,12 @@ export async function playlistOfNumber1s(player: PlayerData): Promise<Playlist> 
     return playlistByPredicate(player, predicate, playlistName);
 }
 
+export async function playlistByCombo(player: PlayerData, fullCombo: boolean, onlyRanked: boolean): Promise <Playlist> {
+    const predicate: ScorePredicate = score => score.score.fullCombo === fullCombo && (!onlyRanked || score.score.pp !== 0);
+    const playlistName: InfoToName = playerInfo => `${playerInfo.name}'s ${fullCombo} Full Combo`;
+    return playlistByPredicate(player, predicate, playlistName);
+}
+
 // Returns a playlist of all the songs currently in the ranking queue.
 export async function rankingQueuePlaylist(): Promise<Playlist> {
     const rankRequests = await ScoreSaberApi.fetchRankingQueue();
@@ -128,10 +134,10 @@ export async function playlistOfScoresBelowGivenAccuracy(player: PlayerData, acc
 }
 
 // Returns a playlist that order's based on percieved potential improvement
-export async function playlistByPercievedWorstScore(player: PlayerData, upperStar: number, lowerStar: number, leaderboardPlace: number, onlyRanked:boolean): Promise<Playlist> {
+export async function playlistByPercievedWorstScore(player: PlayerData, lowestStar: number, highestStar: number, belowRank: number, onlyRanked:boolean): Promise<Playlist> {
     const predicate: ScorePredicate = score => {
         const songAcc = score.score.baseScore / score.leaderboard.maxScore * 100;
-		return score.score.rank > leaderboardPlace && score.leaderboard.stars <= upperStar && score.leaderboard.stars >= lowerStar && songAcc < 98.6;
+		return score.score.rank < belowRank && score.leaderboard.stars <= highestStar && score.leaderboard.stars >= lowestStar && songAcc < 99;
     };
     
     const playlistName: InfoToName = playerInfo => `${playerInfo.name}'s Improvement Checklist.`;
@@ -139,7 +145,7 @@ export async function playlistByPercievedWorstScore(player: PlayerData, upperSta
     sorted = sorted.filter(predicate);
     // Debug the Weight, rank, date and PP to console for each map for adjusting purposes
     for (let j = 0; j < sorted.length; j++){
-        console.log(`>> ${sorted[j].leaderboard.songName}, Weight: ${weighting(sorted[j])} | Rank ${sorted[j].score.rank} | Month  ${monthDiff(new Date(sorted[j].score.timeSet), new Date())} | PP ${sorted[j].score.pp}`);
+        console.log(`>> ${sorted[j].leaderboard.songName}, Weight: ${weighting(sorted[j])} | Rank ${sorted[j].score.rank} | Month  ${monthDiff(new Date(sorted[j].score.timeSet), new Date())} | Star ${sorted[j].leaderboard.stars}`);
     }
     return playlistByPredicate(player, predicate, playlistName, sorted);
 }
