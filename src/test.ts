@@ -1,7 +1,9 @@
-import { writePlaylist, playlistOfNumber1s, percentageOfNMumber1s, snipePlaylist, rankingQueuePlaylist, playlistOfTopX, playlistOfNotTopX, playlistOfScoresBelowGivenAccuracy } from './main';
+import { writePlaylist, playlistOfNumber1s, percentageOfNMumber1s, snipePlaylist, rankingQueuePlaylist, playlistOfTopX, playlistOfNotTopX, playlistOfScoresBelowGivenAccuracy, PlayerData, getPlayerData } from './main';
 
 async function noTopLevelAsyncAwait() {
-    writePlaylist(await playlistOfNumber1s('76561198138161802'));
+
+    let joshabi = await getPlayerData('76561198138161802');
+    writePlaylist(await playlistOfNumber1s(joshabi));
 }
 
 noTopLevelAsyncAwait();
