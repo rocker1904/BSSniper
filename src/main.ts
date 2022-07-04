@@ -8,28 +8,28 @@ import util from 'util';
 import { PlayerScore, Player } from './scoresaber/api/PlayerData';
 
 interface ScorePredicate {
-    (value: PlayerScore, index: number, array: PlayerScore[]): boolean
+    (playerScore: PlayerScore, index: number, playerScores: PlayerScore[]): boolean
 }
 
-interface InfoToName {
-    (playerInfo: Player): string
+interface PlayerToPlaylistName {
+    (player: Player): string
 }
 
 // A class for storing player information
-export class PlayerData {
-    scores: PlayerScore[];
-    info!: Player;
-    constructor(scores: PlayerScore[], info: Player){
-        this.scores = scores;
-        this.info = info;
+export class CachedPlayer {
+    playerScores: PlayerScore[];
+    player: Player;
+    constructor(scores: PlayerScore[], player: Player){
+        this.playerScores = scores;
+        this.player = player;
     }
 }
 
-// Gathers a players scores and information, returns the Data
-export async function getPlayerData(playerID: string): Promise<PlayerData> {
-    let scores = await ScoreSaberApi.fetchAllScores(playerID);
-    let playerInfo = await ScoreSaberApi.fetchPlayer(playerID);
-    return new PlayerData(scores, playerInfo);
+// Gathers a players scores and information, returns the data
+export async function getPlayerData(playerID: string): Promise<CachedPlayer> {
+    let playerScores = await ScoreSaberApi.fetchAllScores(playerID);
+    let basicPlayer = await ScoreSaberApi.fetchBasicPlayer(playerID);
+    return new CachedPlayer(playerScores, basicPlayer);
 }
 
 // Replaces restricted characters with an underscore.
@@ -59,95 +59,107 @@ export async function writePlaylist(playlist: Playlist, fileName = playlist.play
 }
 
 // Returns a playlist of a user's songs filtered by a predicate.
-export async function playlistByPredicate(player: PlayerData, predicate: ScorePredicate, playlistName: InfoToName, scores?: PlayerScore[]): Promise<Playlist> {
-    if (!scores) {
-        scores = player.scores;
+export async function playlistByPredicate(cachedPlayer: CachedPlayer, predicate: ScorePredicate, playlistName: PlayerToPlaylistName, playerScores?: PlayerScore[]): Promise<Playlist> {
+    if (!playerScores) {
+        playerScores = cachedPlayer.playerScores;
     }
-    let filteredSongs: Song[] = scores.filter(predicate).map(score => {
-        if (score.leaderboard.difficulty.difficultyRaw.split('_')[2] === "SoloStandard"){
-            return {songName: score.leaderboard.songName,
-                levelAuthorName: score.leaderboard.levelAuthorName,
-                hash: score.leaderboard.songHash,
-                levelid: "custom_level_" + score.leaderboard.songHash,
-                difficulties: [{characteristic: "Standard", name: score.leaderboard.difficulty.difficultyRaw.split('_')[1]}]
+    const filteredSongs: Song[] = playerScores.filter(predicate).map(playerScore => {
+        if (playerScore.leaderboard.difficulty.difficultyRaw.split('_')[2] === "SoloStandard") {
+            return {
+                songName: playerScore.leaderboard.songName,
+                levelAuthorName: playerScore.leaderboard.levelAuthorName,
+                hash: playerScore.leaderboard.songHash,
+                levelid: "custom_level_" + playerScore.leaderboard.songHash,
+                difficulties: [{characteristic: "Standard", name: playerScore.leaderboard.difficulty.difficultyRaw.split('_')[1]}]
             }
         } else {
-            return {songName: score.leaderboard.songName,
-                levelAuthorName: score.leaderboard.levelAuthorName,
-                hash: score.leaderboard.songHash,
-                levelid: "custom_level_" + score.leaderboard.songHash
+            return {
+                songName: playerScore.leaderboard.songName,
+                levelAuthorName: playerScore.leaderboard.levelAuthorName,
+                hash: playerScore.leaderboard.songHash,
+                levelid: "custom_level_" + playerScore.leaderboard.songHash
             }
         }
         
     });
-    return playlist(playlistName(player.info), './resources/sniped.png', filteredSongs);
+    return playlist(playlistName(cachedPlayer.player), './resources/sniped.png', filteredSongs);
 }
 
 // Returns a playlist of all songs for which the given player has #1.
-export async function playlistOfNumber1s(player: PlayerData): Promise<Playlist> {
-    const predicate: ScorePredicate = score => score.score.rank === 1;
-    const playlistName: InfoToName = playerInfo => `${playerInfo.name}'s #1s`;
-    return playlistByPredicate(player, predicate, playlistName);
+export async function playlistOfNumber1s(cachedPlayer: CachedPlayer): Promise<Playlist> {
+    const predicate: ScorePredicate = playerScore => playerScore.score.rank === 1;
+    const playlistName: PlayerToPlaylistName = player => `${player.name}'s #1s`;
+    return playlistByPredicate(cachedPlayer, predicate, playlistName);
 }
 
-export async function playlistByCombo(player: PlayerData, fullCombo: boolean, onlyRanked: boolean): Promise <Playlist> {
-    const predicate: ScorePredicate = score => score.score.fullCombo === fullCombo && (!onlyRanked || score.score.pp !== 0);
-    const playlistName: InfoToName = playerInfo => `${playerInfo.name}'s ${fullCombo} Full Combo`;
-    return playlistByPredicate(player, predicate, playlistName);
+// Returns a playlist of all songs for which the given player has #1, within the last x months
+export async function playlistOfNumber1sWithinXMonths(cachedPlayer: CachedPlayer, x: number): Promise<Playlist> {
+    const predicate: ScorePredicate = playerScore => {
+        const date = new Date(playerScore.score.timeSet);
+        return playerScore.score.rank === 1 && date.getTime() > Date.now() - x * 30 * 24 * 60 * 60 * 1000;
+    }
+    const playlistName: PlayerToPlaylistName = player => `${player.name}'s #1s`;
+    return playlistByPredicate(cachedPlayer, predicate, playlistName);
+}
+
+export async function playlistByCombo(cachedPlayer: CachedPlayer, fullCombo: boolean, onlyRanked: boolean): Promise <Playlist> {
+    const predicate: ScorePredicate = playerScore => playerScore.score.fullCombo === fullCombo && (!onlyRanked || playerScore.score.pp !== 0);
+    const playlistName: PlayerToPlaylistName = player => `${player.name}'s ${fullCombo} Full Combo`;
+    return playlistByPredicate(cachedPlayer, predicate, playlistName);
 }
 
 // Returns a playlist of all the songs currently in the ranking queue.
 export async function rankingQueuePlaylist(): Promise<Playlist> {
     const rankRequests = await ScoreSaberApi.fetchRankingQueue();
     const songs: Song[] = rankRequests.map(rankRequest => {
-        return {songName: rankRequest.name,
-                levelAuthorName: rankRequest.levelAuthorName,
-                hash: rankRequest.id,
-                levelid: "custom_level_" + rankRequest.id
+        return {songName: rankRequest.leaderboardInfo.songName,
+                levelAuthorName: rankRequest.leaderboardInfo.levelAuthorName,
+                hash: rankRequest.leaderboardInfo.songHash,
+                levelid: "custom_level_" + rankRequest.leaderboardInfo.songHash
             }
     });
     return playlist('SS Ranking Queue', './resources/SSRankQueue.png', songs);
 }
 
 // Returns a playlist of all songs for which the given player is ranked in the top x.
-export async function playlistOfTopX(player: PlayerData, x: number, onlyRanked: boolean): Promise<Playlist> {
-    const predicate: ScorePredicate = score => score.score.rank <= x && (!onlyRanked || score.score.pp !== 0);
-    const playlistName: InfoToName = playerInfo => `${playerInfo.name}'s Top ${x}s`;
-    return playlistByPredicate(player, predicate, playlistName);
+export async function playlistOfTopX(cachedPlayer: CachedPlayer, x: number, onlyRanked: boolean): Promise<Playlist> {
+    const predicate: ScorePredicate = playerScore => playerScore.score.rank <= x && (!onlyRanked || playerScore.score.pp !== 0);
+    const playlistName: PlayerToPlaylistName = player => `${player.name}'s Top ${x}s`;
+    return playlistByPredicate(cachedPlayer, predicate, playlistName);
 }
 
 // Returns a playlist of all songs for which the given player is not ranked in the top x.
-export async function playlistOfNotTopX(player: PlayerData, x: number, onlyRanked: boolean): Promise<Playlist> {
-    const predicate: ScorePredicate = score => score.score.rank > x && (!onlyRanked || score.score.pp !== 0);
-    const playlistName: InfoToName = playerInfo => `${playerInfo.name}'s Not Top ${x}s`;
-    return playlistByPredicate(player, predicate, playlistName);
+export async function playlistOfNotTopX(cachedPlayer: CachedPlayer, x: number, onlyRanked: boolean): Promise<Playlist> {
+    const predicate: ScorePredicate = playerScore => playerScore.score.rank > x && (!onlyRanked || playerScore.score.pp !== 0);
+    const playlistName: PlayerToPlaylistName = player => `${player.name}'s Not Top ${x}s`;
+    return playlistByPredicate(cachedPlayer, predicate, playlistName);
 }
 
 // Returns a playlist of all songs for which the given player has an accuracy below the given value.
-export async function playlistOfScoresBelowGivenAccuracy(player: PlayerData, accuracy: number, onlyRanked:boolean): Promise<Playlist> {
-    const predicate: ScorePredicate = score => {
-        const songAcc = score.score.baseScore / score.leaderboard.maxScore * 100;
-        return songAcc < accuracy && (!onlyRanked || score.score.pp !== 0);
+export async function playlistOfScoresBelowGivenAccuracy(cachedPlayer: CachedPlayer, accuracy: number, onlyRanked:boolean): Promise<Playlist> {
+    const predicate: ScorePredicate = playerScore => {
+        const songAcc = playerScore.score.baseScore / playerScore.leaderboard.maxScore * 100;
+        return songAcc < accuracy && (!onlyRanked || playerScore.score.pp !== 0);
     };
-    const playlistName: InfoToName = playerInfo => `${playerInfo.name}'s Below ${accuracy}`;
-    return playlistByPredicate(player, predicate, playlistName);
+    const playlistName: PlayerToPlaylistName = player => `${player.name}'s Below ${accuracy}`;
+    return playlistByPredicate(cachedPlayer, predicate, playlistName);
 }
 
 // Returns a playlist that order's based on percieved potential improvement
-export async function playlistByPercievedWorstScore(player: PlayerData, lowestStar: number, highestStar: number, belowRank: number, onlyRanked:boolean): Promise<Playlist> {
-    const predicate: ScorePredicate = score => {
-        const songAcc = score.score.baseScore / score.leaderboard.maxScore * 100;
-		return score.score.rank < belowRank && score.leaderboard.stars <= highestStar && score.leaderboard.stars >= lowestStar && songAcc < 99;
+export async function playlistByPercievedWorstScore(cachedPlayer: CachedPlayer, lowestStar: number, highestStar: number, belowRank: number, onlyRanked:boolean): Promise<Playlist> {
+    const predicate: ScorePredicate = playerScore => {
+        const songAcc = playerScore.score.baseScore / playerScore.leaderboard.maxScore * 100;
+		return playerScore.score.rank < belowRank && playerScore.leaderboard.stars <= highestStar && playerScore.leaderboard.stars >= lowestStar && songAcc < 99;
     };
     
-    const playlistName: InfoToName = playerInfo => `${playerInfo.name}'s Improvement Checklist.`;
-    let sorted = player.scores.sort(compare);
+    const playlistName: PlayerToPlaylistName = player => `${player.name}'s Improvement Checklist.`;
+    let sorted = cachedPlayer.playerScores.sort(compare);
     sorted = sorted.filter(predicate);
     // Debug the Weight, rank, date and PP to console for each map for adjusting purposes
     for (let j = 0; j < sorted.length; j++){
         console.log(`>> ${sorted[j].leaderboard.songName}, Weight: ${weighting(sorted[j])} | Rank ${sorted[j].score.rank} | Month  ${monthDiff(new Date(sorted[j].score.timeSet), new Date())} | Star ${sorted[j].leaderboard.stars}`);
     }
-    return playlistByPredicate(player, predicate, playlistName, sorted);
+    return playlistByPredicate(cachedPlayer, predicate, playlistName, sorted);
 }
 
 // Comparison function for the weights of 2 scores
@@ -159,9 +171,9 @@ function compare(a: PlayerScore, b: PlayerScore): number {
 }
 
 // Weights a score based on its age, pp value, and rank
-function weighting(score: PlayerScore){
-    const ageInMonths = monthDiff(new Date(score.score.timeSet), new Date());
-    let weight = score.score.rank * 3 + ageInMonths * 3 - score.leaderboard.stars / 1.5;
+function weighting(playerScore: PlayerScore){
+    const ageInMonths = monthDiff(new Date(playerScore.score.timeSet), new Date());
+    let weight = playerScore.score.rank * 3 + ageInMonths * 3 - playerScore.leaderboard.stars / 1.5;
     return weight;
  }
 
@@ -175,14 +187,14 @@ function weighting(score: PlayerScore){
 }
 
 // Returns the percentage of songs for which the given player is #1.
-export async function percentageOfNMumber1s(player: PlayerData): Promise<number> {
-    let totalNum1s = player.scores.filter(score => score.score.rank === 1).length;
-    return totalNum1s / player.scores.length * 100;
+export async function percentageOfNMumber1s(cachedPlayer: CachedPlayer): Promise<number> {
+    let totalNum1s = cachedPlayer.playerScores.filter(score => score.score.rank === 1).length;
+    return totalNum1s / cachedPlayer.playerScores.length * 100;
 }
 
 // Returns a playlist of all songs where player1 has a lower score than player2.
-export async function snipePlaylist(P1: PlayerData, P2: PlayerData): Promise<Playlist> {
-    const predicate: ScorePredicate = p1Score => P2.scores.some(p2Score => p1Score.leaderboard.id === p2Score.leaderboard.id && p1Score.score < p2Score.score);
-    const playlistName: InfoToName = () => `Snipe ${P2.info.name}`;
+export async function snipePlaylist(P1: CachedPlayer, P2: CachedPlayer): Promise<Playlist> {
+    const predicate: ScorePredicate = p1Score => P2.playerScores.some(p2Score => p1Score.leaderboard.id === p2Score.leaderboard.id && p1Score.score < p2Score.score);
+    const playlistName: PlayerToPlaylistName = () => `Snipe ${P2.player.name}`;
     return playlistByPredicate(P1, predicate, playlistName);
 }

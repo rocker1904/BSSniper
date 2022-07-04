@@ -13,10 +13,20 @@ export interface Player {
    role: string;
    badges: Badge[] | null;
    histories: string;
-   scoreStats: ScoreStats;
+   scoreStats: ScoreStats | null;
    permissions: number;
    banned: boolean;
    inactive: boolean;
+}
+
+export interface BasicPlayer extends Player {
+    badges: null;
+    scoreStats: null;
+}
+
+export interface FullPlayer extends Player {
+    badges: Badge[];
+    scoreStats: ScoreStats;
 }
 
 export interface PlayerScore {
@@ -32,6 +42,7 @@ export interface LeaderboardPlayer {
    permissions: number;
    role: string;
 }
+
 export interface ScoreStats {
    totalScore: number;
    totalRankedScore: number;
@@ -51,6 +62,10 @@ export interface PlayerScoreCollection {
    metadata: Metadata;
 }
 
+export interface PlayerCollection {
+   players: Player[];
+   metadata: Metadata;
+}
 
 export enum Role {
    RTR = 'rtr',

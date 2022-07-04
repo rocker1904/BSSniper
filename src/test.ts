@@ -1,9 +1,10 @@
-import { writePlaylist, playlistOfNumber1s, percentageOfNMumber1s, snipePlaylist, rankingQueuePlaylist, playlistOfTopX, playlistOfNotTopX, playlistOfScoresBelowGivenAccuracy, PlayerData, getPlayerData, playlistByPercievedWorstScore, playlistByCombo } from './main';
+import { writePlaylist, playlistOfNumber1s, percentageOfNMumber1s, snipePlaylist, rankingQueuePlaylist, playlistOfTopX, playlistOfNotTopX, playlistOfScoresBelowGivenAccuracy, CachedPlayer, getPlayerData, playlistByPercievedWorstScore, playlistByCombo, playlistOfNumber1sWithinXMonths } from './main';
 
 async function noTopLevelAsyncAwait() {
 
-    let joshabi = await getPlayerData('76561198138161802');
-    writePlaylist(await playlistByCombo(joshabi, false, true));
+    //const pandita = await getPlayerData('76561198186151129');
+    //writePlaylist(await playlistOfNumber1sWithinXMonths(pandita, 5));
+    writePlaylist(await rankingQueuePlaylist())
 }
 
 noTopLevelAsyncAwait();
