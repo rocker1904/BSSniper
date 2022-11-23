@@ -2,6 +2,7 @@ import Axios from 'axios';
 import {LeaderboardInfo, ScoreCollection} from './LeaderboardData';
 import {BasicPlayer, FullPlayer, Player, PlayerCollection, PlayerScore, PlayerScoreCollection} from './PlayerData';
 import axiosRetry from 'axios-retry';
+import{RankRequestListing} from './Ranking'
 
 axiosRetry(Axios, {
     retries: 3,
@@ -86,6 +87,11 @@ export default class ScoreSaberAPI {
         return scoreCollection;
     }
 
+    public static async fetchRankingQueue(): Promise<RankRequestListing[]> {
+        const topOfRankingQueue = await this.fetchPage('ranking/requests/top') as RankRequestListing[];
+        const restOfRankingQueue = await this.fetchPage('ranking/requests/belowTop') as RankRequestListing[];
+        return topOfRankingQueue.concat(restOfRankingQueue);
+    } 
     // Fetches all of a players scores by simultaneous requests of all score pages
     public static async fetchAllScores(playerId: string): Promise<PlayerScore[]> {
         const fullPlayer = await ScoreSaberAPI.fetchFullPlayer(playerId);

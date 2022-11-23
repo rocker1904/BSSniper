@@ -109,7 +109,7 @@ export async function playlistByCombo(cachedPlayer: CachedPlayer, fullCombo: boo
 }
 
 // Returns a playlist of all the songs currently in the ranking queue.
-/*export async function rankingQueuePlaylist(): Promise<Playlist> {
+export async function rankingQueuePlaylist(): Promise<Playlist> {
     const rankRequests = await ScoreSaberApi.fetchRankingQueue();
     const songs: Song[] = rankRequests.map(rankRequest => {
         return {songName: rankRequest.leaderboardInfo.songName,
@@ -120,7 +120,7 @@ export async function playlistByCombo(cachedPlayer: CachedPlayer, fullCombo: boo
     });
     return playlist('SS Ranking Queue', './resources/SSRankQueue.png', songs);
 }
-*/
+
 // Returns a playlist of all songs for which the given player is ranked in the top x.
 export async function playlistOfTopX(cachedPlayer: CachedPlayer, x: number, onlyRanked: boolean): Promise<Playlist> {
     const predicate: ScorePredicate = playerScore => playerScore.score.rank <= x && (!onlyRanked || playerScore.score.pp !== 0);
