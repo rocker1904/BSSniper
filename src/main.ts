@@ -194,7 +194,8 @@ export async function percentageOfNMumber1s(cachedPlayer: CachedPlayer): Promise
 
 // Returns a playlist of all songs where player1 has a lower score than player2.
 export async function snipePlaylist(P1: CachedPlayer, P2: CachedPlayer): Promise<Playlist> {
-    const predicate: ScorePredicate = p1Score => P2.playerScores.some(p2Score => p1Score.leaderboard.id === p2Score.leaderboard.id && p1Score.score < p2Score.score);
+
+    const predicate: ScorePredicate = p1Score => P2.playerScores.some(p2Score => p1Score.leaderboard.id === p2Score.leaderboard.id && p1Score.score.modifiedScore < p2Score.score.modifiedScore);
     const playlistName: PlayerToPlaylistName = () => `Snipe ${P2.player.name}`;
     return playlistByPredicate(P1, predicate, playlistName);
 }
