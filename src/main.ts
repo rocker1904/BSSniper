@@ -108,6 +108,19 @@ export async function playlistByCombo(cachedPlayer: CachedPlayer, fullCombo: boo
     return playlistByPredicate(cachedPlayer, predicate, playlistName);
 }
 
+export async function rankedPlaylistByStarValue(minStar:number,maxStar:number): Promise<Playlist>{
+    const rankedMaps = await ScoreSaberApi.fetchRankedBetweenStars(minStar,maxStar)
+    const songs: Song[] = rankedMaps.map(rankedMaps => {
+        return{songName: rankedMaps.songName,
+            levelAuthorName: rankedMaps.levelAuthorName,
+            hash:rankedMaps.songHash,
+            levelid: "custom_level_"+rankedMaps.songHash,
+            difficulties:[{characteristic: "Standard", name: rankedMaps.difficulty.difficultyRaw.split('_')[1]}]
+        }
+    })
+    return playlist(`Ranked maps ${minStar}-${maxStar}*` , './resources/SSLogo.png', songs )
+}
+
 // Returns a playlist of all the songs currently in the ranking queue.
 export async function rankingQueuePlaylist(): Promise<Playlist> {
     const rankRequests = await ScoreSaberApi.fetchRankingQueue();
