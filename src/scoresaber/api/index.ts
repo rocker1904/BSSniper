@@ -1,8 +1,9 @@
 import Axios from 'axios';
-import {Leaderboard, LeaderboardInfo, LeaderboardInfoCollection, ScoreCollection} from './LeaderboardData';
-import {BasicPlayer, FullPlayer, Player, PlayerCollection, PlayerScore, PlayerScoreCollection} from './PlayerData';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Leaderboard, LeaderboardInfo, LeaderboardInfoCollection, ScoreCollection } from './LeaderboardData';
+import { BasicPlayer, FullPlayer, Player, PlayerCollection, PlayerScore, PlayerScoreCollection } from './PlayerData';
 import axiosRetry from 'axios-retry';
-import{RankRequestListing} from './Ranking'
+import { RankRequestListing } from './Ranking';
 
 axiosRetry(Axios, {
     retries: 3,
@@ -23,7 +24,7 @@ export default class ScoreSaberAPI {
         // When we run out of requests, wait until the limit resets
         while (this.rateLimitRemaining <= 10) {
             const expiresInMillis = this.rateLimitReset * 1000 - Date.now() + 1000;
-            await new Promise((resolve) => setTimeout(resolve, expiresInMillis));
+            await new Promise(resolve => setTimeout(resolve, expiresInMillis));
         }
 
         // Make the request
@@ -31,10 +32,12 @@ export default class ScoreSaberAPI {
         this.rateLimitRemaining--;
 
         // Update the reset time if it changed
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!response.headers['x-ratelimit-reset']) {
             throw new Error('Request missing ratelimit reset header');
         }
-        const ratelimitReset = parseInt(response.headers['x-ratelimit-reset']);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const ratelimitReset = parseInt(response.headers['x-ratelimit-reset'] as string);
         if (this.rateLimitReset < ratelimitReset) {
             this.rateLimitReset = ratelimitReset;
             setTimeout(() => this.rateLimitRemaining = 400, this.rateLimitReset * 1000 - Date.now() + 500);
@@ -78,7 +81,7 @@ export default class ScoreSaberAPI {
     }
 
 
-    public static async fetchLeaderboards(starMin: number, starMax: number,pageNum: number){
+    public static async fetchLeaderboards(starMin: number, starMax: number, pageNum: number) {
         const leaderboards = await this.fetchPage(`leaderboards?ranked=true&minStar=${starMin}&maxStar=${starMax}&page=${pageNum}`) as LeaderboardInfoCollection;
         return leaderboards;
     }
@@ -95,15 +98,15 @@ export default class ScoreSaberAPI {
 
 
     public static async fetchRankedBetweenStars(starMin: number, starMax: number): Promise<LeaderboardInfo[]> {
-        const Firstleaderboard = await ScoreSaberAPI.fetchLeaderboards(starMin,starMax,1)
-        const totalPages =Math.ceil(Firstleaderboard.metadata.total/Firstleaderboard.metadata.itemsPerPage)
+        const Firstleaderboard = await ScoreSaberAPI.fetchLeaderboards(starMin, starMax, 1);
+        const totalPages =Math.ceil(Firstleaderboard.metadata.total/Firstleaderboard.metadata.itemsPerPage);
         let leaderboards = [] as LeaderboardInfo[];
         const promises = [];
-        for (let i =1;i <= totalPages;i++){
-            const promise = ScoreSaberAPI.fetchLeaderboards(starMin,starMax,i).then((leaderboardPage)=>{
-                leaderboards = leaderboards.concat(leaderboardPage.leaderboards)
-            })
-            
+        for (let i =1; i <= totalPages; i++) {
+            const promise = ScoreSaberAPI.fetchLeaderboards(starMin, starMax, i).then(leaderboardPage=>{
+                leaderboards = leaderboards.concat(leaderboardPage.leaderboards);
+            });
+
             promises.push(promise);
         }
         console.log(`Waiting for ${totalPages} requests to resolve...`);
@@ -111,13 +114,13 @@ export default class ScoreSaberAPI {
         console.log(`Fetched ${totalPages}/${totalPages}.`);
         return leaderboards;
     }
-    
+
 
     public static async fetchRankingQueue(): Promise<RankRequestListing[]> {
         const topOfRankingQueue = await this.fetchPage('ranking/requests/top') as RankRequestListing[];
         const restOfRankingQueue = await this.fetchPage('ranking/requests/belowTop') as RankRequestListing[];
         return topOfRankingQueue.concat(restOfRankingQueue);
-    } 
+    }
     // Fetches all of a players scores by simultaneous requests of all score pages
     public static async fetchAllScores(playerId: string): Promise<PlayerScore[]> {
         const fullPlayer = await ScoreSaberAPI.fetchFullPlayer(playerId);
@@ -125,7 +128,7 @@ export default class ScoreSaberAPI {
         let playerScores = [] as PlayerScore[];
         const promises = [];
         for (let i = 1; i <= totalPages; i++) {
-            const promise = ScoreSaberAPI.fetchScoresPage(playerId, i).then((scoresPage) => {
+            const promise = ScoreSaberAPI.fetchScoresPage(playerId, i).then(scoresPage => {
                 playerScores = playerScores.concat(scoresPage.playerScores);
             });
             promises.push(promise);
