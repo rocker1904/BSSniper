@@ -34,7 +34,8 @@
             "always"
         ],
         "linebreak-style": [
-            0
+            "error",
+            "windows"
         ],
         "@typescript-eslint/semi": [
             "error"
