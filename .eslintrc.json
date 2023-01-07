@@ -19,27 +19,13 @@
     ],
     "rules": {
         "require-jsdoc": "off",
-        "indent": [
-            "error",
-            4
-        ],
+        "indent": ["error", 4],
         "max-len": "off",
         "semi": "off",
-        "arrow-parens": [
-            "error",
-            "as-needed"
-        ],
-        "object-curly-spacing": [
-            "error",
-            "always"
-        ],
-        "linebreak-style": [
-            "error",
-            "windows"
-        ],
-        "@typescript-eslint/semi": [
-            "error"
-        ],
+        "arrow-parens": ["error", "as-needed"],
+        "object-curly-spacing": ["error", "always"],
+        "linebreak-style": ["error", "windows"],
+        "@typescript-eslint/semi": ["error"],
         "@typescript-eslint/no-non-null-assertion": "Off"
     }
 }
