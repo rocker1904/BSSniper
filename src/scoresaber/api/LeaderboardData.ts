@@ -90,73 +90,73 @@ export enum SortDirection {
 }
 
 export function getCategoryFromNumber(category: number): Category {
-   switch (category) {
-      case 0: {
-         return Category.Trending;
-      }
-      case 1: {
-         return Category.DateRanked;
-      }
-      case 2: {
-         return Category.ScoresSet;
-      }
-      case 3: {
-         return Category.StarDifficulty;
-      }
-      case 4: {
-         return Category.Author;
-      }
-      case 5: {
-         return Category.DateQualified;
-      }
-   }
-   return Category.Trending;
+    switch (category) {
+    case 0: {
+        return Category.Trending;
+    }
+    case 1: {
+        return Category.DateRanked;
+    }
+    case 2: {
+        return Category.ScoresSet;
+    }
+    case 3: {
+        return Category.StarDifficulty;
+    }
+    case 4: {
+        return Category.Author;
+    }
+    case 5: {
+        return Category.DateQualified;
+    }
+    }
+    return Category.Trending;
 }
 
 export function getNumberFromCategory(category: Category): number {
-   switch (category) {
-      case Category.Trending: {
-         return 0;
-      }
-      case Category.DateRanked: {
-         return 1;
-      }
-      case Category.ScoresSet: {
-         return 2;
-      }
-      case Category.StarDifficulty: {
-         return 3;
-      }
-      case Category.Author: {
-         return 4;
-      }
-      case Category.DateQualified: {
-         return 5;
-      }
-   }
-   return 0;
+    switch (category) {
+    case Category.Trending: {
+        return 0;
+    }
+    case Category.DateRanked: {
+        return 1;
+    }
+    case Category.ScoresSet: {
+        return 2;
+    }
+    case Category.StarDifficulty: {
+        return 3;
+    }
+    case Category.Author: {
+        return 4;
+    }
+    case Category.DateQualified: {
+        return 5;
+    }
+    }
+    return 0;
 }
 
 export function getSortDirectionFromNumber(direction: number): SortDirection {
-   switch (direction) {
-      case 0: {
-         return SortDirection.Descending;
-      }
-      case 1: {
-         return SortDirection.Ascending;
-      }
-   }
-   return SortDirection.Descending;
+    switch (direction) {
+    case 0: {
+        return SortDirection.Descending;
+    }
+    case 1: {
+        return SortDirection.Ascending;
+    }
+    }
+    return SortDirection.Descending;
 }
 
 export function getNumberFromSortDirection(direction: SortDirection): number {
-   switch (direction) {
-      case SortDirection.Descending: {
-         return 0;
-      }
-      case SortDirection.Ascending: {
-         return 1;
-      }
-   }
-   return 0;
+    switch (direction) {
+    case SortDirection.Descending: {
+        return 0;
+    }
+    case SortDirection.Ascending: {
+        return 1;
+    }
+    }
+    return 0;
 }
