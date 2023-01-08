@@ -2,8 +2,9 @@
   "name": "bssniper",
   "version": "2.0.0",
   "description": "",
-  "main": "src/main.js",
+  "main": "build/main.js",
   "private": true,
+  "files": ["./build"],
   "scripts": {
     "test": "cd src && ts-node test.ts",
     "build": "tsc ; cp -r src/resources build/src/resources",

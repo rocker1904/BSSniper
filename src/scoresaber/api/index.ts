@@ -1,5 +1,6 @@
 import Axios from 'axios';
-import { LeaderboardInfo, ScoreCollection } from './LeaderboardData';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Leaderboard, LeaderboardInfo, LeaderboardInfoCollection, ScoreCollection } from './LeaderboardData';
 import { BasicPlayer, FullPlayer, Player, PlayerCollection, PlayerScore, PlayerScoreCollection } from './PlayerData';
 import axiosRetry from 'axios-retry';
 import { RankRequestListing } from './Ranking';
@@ -79,6 +80,12 @@ export default class ScoreSaberAPI {
         return scoresPage;
     }
 
+
+    public static async fetchLeaderboards(starMin: number, starMax: number, pageNum: number) {
+        const leaderboards = await this.fetchPage(`leaderboards?ranked=true&minStar=${starMin}&maxStar=${starMax}&page=${pageNum}`) as LeaderboardInfoCollection;
+        return leaderboards;
+    }
+
     public static async fetchLeaderboardScores(leaderboardId: number, page = 1): Promise<ScoreCollection> {
         const scoreCollection = await this.fetchPage(`leaderboard/by-id/${leaderboardId}/scores?page=${page}`) as ScoreCollection; // TODO: Handle request fail
         return scoreCollection;
@@ -88,6 +95,26 @@ export default class ScoreSaberAPI {
         const scoreCollection = await this.fetchPage(`leaderboard/by-id/${leaderboardId}/info`) as LeaderboardInfo; // TODO: Handle request fail
         return scoreCollection;
     }
+
+
+    public static async fetchRankedBetweenStars(starMin: number, starMax: number): Promise<LeaderboardInfo[]> {
+        const Firstleaderboard = await ScoreSaberAPI.fetchLeaderboards(starMin, starMax, 1);
+        const totalPages =Math.ceil(Firstleaderboard.metadata.total/Firstleaderboard.metadata.itemsPerPage);
+        let leaderboards = [] as LeaderboardInfo[];
+        const promises = [];
+        for (let i =1; i <= totalPages; i++) {
+            const promise = ScoreSaberAPI.fetchLeaderboards(starMin, starMax, i).then(leaderboardPage=>{
+                leaderboards = leaderboards.concat(leaderboardPage.leaderboards);
+            });
+
+            promises.push(promise);
+        }
+        console.log(`Waiting for ${totalPages} requests to resolve...`);
+        await Promise.all(promises);
+        console.log(`Fetched ${totalPages}/${totalPages}.`);
+        return leaderboards;
+    }
+
 
     public static async fetchRankingQueue(): Promise<RankRequestListing[]> {
         const topOfRankingQueue = await this.fetchPage('ranking/requests/top') as RankRequestListing[];

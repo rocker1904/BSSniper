@@ -5,5 +5,6 @@ export default interface Playlist {
     playlistAuthor: string;
     playlistDescription: string;
     image: string;
+    syncURL?: string;
     songs: Song[];
 }
