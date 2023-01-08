@@ -1,9 +1,9 @@
 import Axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Leaderboard, LeaderboardInfo, LeaderboardInfoCollection, ScoreCollection } from './LeaderboardData';
-import { BasicPlayer, FullPlayer, Player, PlayerCollection, PlayerScore, PlayerScoreCollection } from './PlayerData';
+import { Leaderboard, LeaderboardInfo, LeaderboardInfoCollection, ScoreCollection } from './types/LeaderboardData';
+import { BasicPlayer, FullPlayer, Player, PlayerCollection, PlayerScore, PlayerScoreCollection } from './types/PlayerData';
 import axiosRetry from 'axios-retry';
-import { RankRequestListing } from './Ranking';
+import { RankRequestListing } from './types/Ranking';
 
 axiosRetry(Axios, {
     retries: 3,

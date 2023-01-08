@@ -1,11 +1,10 @@
 import ScoreSaberApi from './scoresaber/api';
-import Playlist from './playlists/Playlist';
-import Song from './playlists/Song';
-import { name } from '../package.json';
+import Playlist from './types/Playlist';
+import Song from './types/Song';
 import path from 'path';
 import fs from 'fs';
 import util from 'util';
-import { PlayerScore, Player } from './scoresaber/api/PlayerData';
+import { PlayerScore, Player } from './scoresaber/api/types/PlayerData';
 
 interface ScorePredicate {
     (playerScore: PlayerScore, index: number, playerScores: PlayerScore[]): boolean
@@ -48,7 +47,7 @@ async function imgToBase64(imagePath: string): Promise<string> {
 
 // Returns a playlist with base64 converted image.
 async function playlist(playlistTitle: string, imagePath: string, songs: Song[], syncLink?:string, playlistDescription = ''): Promise<Playlist> {
-    return { playlistTitle, playlistAuthor: name, playlistDescription, image: await imgToBase64(imagePath), syncURL: syncLink, songs };
+    return { playlistTitle, playlistAuthor: 'BSSniper', playlistDescription, image: await imgToBase64(imagePath), syncURL: syncLink, songs };
 }
 
 // Writes a playlist to file.
