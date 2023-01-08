@@ -4,7 +4,6 @@
   "description": "A collection of useful functions for building Beat Saber playlists based on player scores.",
   "main": "build/main.js",
   "types": "build/main.d.ts",
-  "private": true,
   "files": [
     "./build"
   ],
