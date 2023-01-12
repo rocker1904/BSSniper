@@ -27,6 +27,7 @@ export default class ScoreSaberAPI {
             await new Promise(resolve => setTimeout(resolve, expiresInMillis));
         }
 
+
         // Make the request
         const response = await Axios.get(this.SS_BASE_URL + relativePath);
         this.rateLimitRemaining--;
@@ -80,6 +81,10 @@ export default class ScoreSaberAPI {
         return scoresPage;
     }
 
+    public static async fetchLatestRankedMaps(): Promise<LeaderboardInfoCollection> {
+        const latestRaknkedMaps = await this.fetchPage('https://scoresaber.com/api/leaderboards?ranked=true&category=1&sort=0') as LeaderboardInfoCollection;
+        return latestRaknkedMaps;
+    }
 
     public static async fetchLeaderboards(starMin: number, starMax: number, pageNum: number) {
         const leaderboards = await this.fetchPage(`leaderboards?ranked=true&minStar=${starMin}&maxStar=${starMax}&page=${pageNum}`) as LeaderboardInfoCollection;
