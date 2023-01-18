@@ -2,7 +2,7 @@ import ScoreSaberApi from './scoresaber/api';
 import Playlist from './types/Playlist';
 import Song from './types/Song';
 import path from 'path';
-import fs from 'fs';
+import fs, { constants } from 'fs';
 import util from 'util';
 import { PlayerScore, Player } from './scoresaber/api/types/PlayerData';
 
@@ -51,10 +51,11 @@ async function playlist(playlistTitle: string, imagePath: string, songs: Song[],
 }
 
 // Writes a playlist to file.
-export async function writePlaylist(playlist: Playlist, fileName = playlist.playlistTitle): Promise<void> {
+export async function writePlaylist(playlist: Playlist, saveDir = './playlists', fileName = playlist.playlistTitle): Promise<void> {
     const playlistString = JSON.stringify(playlist);
     const writeFile = util.promisify(fs.writeFile);
-    return writeFile(`${windowsFileNamify(fileName)}.json`, playlistString);
+    await fs.promises.access(saveDir, constants.R_OK).catch(async () => await fs.promises.mkdir( saveDir ));
+    return writeFile(`${saveDir}/${windowsFileNamify(fileName)}.json`, playlistString);
 }
 
 // Returns a playlist of a user's songs filtered by a predicate.

@@ -1,6 +1,6 @@
 {
   "name": "bssniper",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "A collection of useful functions for building Beat Saber playlists based on player scores.",
   "main": "build/main.js",
   "types": "build/main.d.ts",
