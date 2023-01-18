@@ -1,6 +1,6 @@
 {
   "name": "bssniper",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "A collection of useful functions for building Beat Saber playlists based on player scores.",
   "main": "build/main.js",
   "types": "build/main.d.ts",
@@ -12,7 +12,7 @@
     "build": "run-script-os",
     "build:nix": "rimraf ./build && tsc && cp -r src/resources build/resources",
     "build:win32": "rimraf ./build && tsc && xcopy src\\resources build\\resources /e /i /h /y",
-    "prepublish": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",

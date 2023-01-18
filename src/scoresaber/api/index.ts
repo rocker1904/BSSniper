@@ -1,6 +1,5 @@
 import Axios from 'axios';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Leaderboard, LeaderboardInfo, LeaderboardInfoCollection, ScoreCollection } from './types/LeaderboardData';
+import { LeaderboardInfo, LeaderboardInfoCollection, ScoreCollection } from './types/LeaderboardData';
 import { BasicPlayer, FullPlayer, Player, PlayerCollection, PlayerScore, PlayerScoreCollection } from './types/PlayerData';
 import axiosRetry from 'axios-retry';
 import { RankRequestListing } from './types/Ranking';
@@ -38,7 +37,7 @@ export default class ScoreSaberAPI {
             throw new Error('Request missing ratelimit reset header');
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const ratelimitReset = parseInt(response.headers['x-ratelimit-reset'] as string);
+        const ratelimitReset = parseInt(response.headers['x-ratelimit-reset']);
         if (this.rateLimitReset < ratelimitReset) {
             this.rateLimitReset = ratelimitReset;
             setTimeout(() => this.rateLimitRemaining = 400, this.rateLimitReset * 1000 - Date.now() + 500);
@@ -82,7 +81,7 @@ export default class ScoreSaberAPI {
     }
 
     public static async fetchLatestRankedMaps(): Promise<LeaderboardInfoCollection> {
-        const latestRaknkedMaps = await this.fetchPage('https://scoresaber.com/api/leaderboards?ranked=true&category=1&sort=0') as LeaderboardInfoCollection;
+        const latestRaknkedMaps = await this.fetchPage('leaderboards?ranked=true&category=1&sort=0') as LeaderboardInfoCollection;
         return latestRaknkedMaps;
     }
 
@@ -120,12 +119,12 @@ export default class ScoreSaberAPI {
         return leaderboards;
     }
 
-
     public static async fetchRankingQueue(): Promise<RankRequestListing[]> {
         const topOfRankingQueue = await this.fetchPage('ranking/requests/top') as RankRequestListing[];
         const restOfRankingQueue = await this.fetchPage('ranking/requests/belowTop') as RankRequestListing[];
         return topOfRankingQueue.concat(restOfRankingQueue);
     }
+
     // Fetches all of a players scores by simultaneous requests of all score pages
     public static async fetchAllScores(playerId: string): Promise<PlayerScore[]> {
         const fullPlayer = await ScoreSaberAPI.fetchFullPlayer(playerId);
