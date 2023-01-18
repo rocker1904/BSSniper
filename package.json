@@ -1,6 +1,6 @@
 {
   "name": "bssniper",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "A collection of useful functions for building Beat Saber playlists based on player scores.",
   "main": "build/main.js",
   "types": "build/main.d.ts",
@@ -12,7 +12,7 @@
     "build": "run-script-os",
     "build:nix": "rimraf ./build && tsc && cp -r src/resources build/resources",
     "build:win32": "rimraf ./build && tsc && xcopy src\\resources build\\resources /e /i /h /y",
-    "prepublishOnly": "npm run build"
+    "prepack": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -25,18 +25,17 @@
   },
   "homepage": "https://github.com/rocker1904/BSSniper#readme",
   "dependencies": {
-    "axios": "^1.2.3",
-    "axios-retry": "^3.3.1"
+    "scoresaber.js": "^0.2.0"
   },
   "devDependencies": {
-    "typescript": "^4.9.4",
-    "ts-node": "^10.9.1",
     "@types/node": "^18.11.18",
     "@typescript-eslint/eslint-plugin": "^5.48.2",
     "@typescript-eslint/parser": "^5.48.2",
     "eslint": "^8.32.0",
     "eslint-config-google": "^0.14.0",
     "rimraf": "^4.1.1",
-    "run-script-os": "^1.1.6"
+    "run-script-os": "^1.1.6",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
   }
 }

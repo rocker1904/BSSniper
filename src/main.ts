@@ -1,10 +1,9 @@
-import ScoreSaberApi from './scoresaber/api';
+import ScoreSaberApi, { PlayerScore, Player } from 'scoresaber.js';
 import Playlist from './types/Playlist';
 import Song from './types/Song';
 import path from 'path';
 import fs, { constants } from 'fs';
 import util from 'util';
-import { PlayerScore, Player } from './scoresaber/api/types/PlayerData';
 
 interface ScorePredicate {
     (playerScore: PlayerScore, index: number, playerScores: PlayerScore[]): boolean
