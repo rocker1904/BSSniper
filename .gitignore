@@ -13,3 +13,4 @@ src/*.json
 src/*.zip
 src/*.txt
 src/*.csv
+src/playlists/
